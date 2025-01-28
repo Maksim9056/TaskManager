@@ -17,6 +17,8 @@ namespace TaskManager
             Trace.Listeners.Add(new ConsoleTraceListener());
 
             Trace.Listeners.Add(new TextWriterTraceListener("TaskManager_log.txt"));
+            // Добавили
+        
 
             //PerformanceCounter performanceCounter = new PerformanceCounter();
             //performanceCounter.
@@ -28,6 +30,7 @@ namespace TaskManager
                 EventLog.CreateEventSource("TaskManager", "Application");
             }
             EventLog.WriteEntry("TaskManager", "Программа TaskManager запущена.", EventLogEntryType.Information);
+            TraceSource source = new TraceSource("PerfTracer");
 
 
             bool infiti = true;
@@ -47,7 +50,12 @@ namespace TaskManager
                     {
                         case "add":
 
+                            source.TraceEvent(TraceEventType.Start, 1, "Начало операции add");
+                            Stopwatch sw = Stopwatch.StartNew();
+
+
                             Console.WriteLine("Программа просит ввести название задачи: «Учить C#».\r\n");
+
 
 
                             TitleBook = Console.ReadLine();
@@ -62,8 +70,17 @@ namespace TaskManager
                             Trace.WriteLine($"[INFO] Задача \"Учить C#\" успешно добавлена.");
 
                             Trace.WriteLine("[TRACE] Конец операции AddTask.");
+                            source.TraceEvent(TraceEventType.Information, 2,
+                       $"Операция заняла {sw.Elapsed.TotalSeconds} секунд");
+                            sw.Stop();
+                            source.TraceEvent(TraceEventType.Stop, 3, "Завершение операции add");
+                       
                             break;
                         case "list":
+
+                            source.TraceEvent(TraceEventType.Start, 1, "Начало операции list");
+                            Stopwatch stopwatch1 = Stopwatch.StartNew();
+
 
 
                             var task = taskManagers.ListTasks();
@@ -91,9 +108,15 @@ namespace TaskManager
 
                             }
                             EventLog.WriteEntry("TaskManager", "Выполнилась TaskManager list.", EventLogEntryType.Information);
+                            source.TraceEvent(TraceEventType.Stop, 3, "Завершение операции list");
 
+                            source.TraceEvent(TraceEventType.Information, 2,
+                                $"Операция list заняла {stopwatch1.Elapsed.TotalSeconds} секунд");
                             break;
                         case "remove":
+                            source.TraceEvent(TraceEventType.Start, 1, "Начало операции remove");
+                            Stopwatch stopwatch2 = Stopwatch.StartNew();
+
 
                             Trace.WriteLine("[TRACE] Начало операции RemoveTask.");
                             Trace.WriteLine("Введите название задачу для удаления \r\n");
@@ -115,6 +138,8 @@ namespace TaskManager
                             Trace.WriteLine($"[TRACE] {DateTime.Now} Попытка удалить задачу:\".");
 
                             Trace.WriteLine($"[LOG] {DateTime.Now} Задача \n удалена.");
+                            source.TraceEvent(TraceEventType.Information, 2,
+                            $"Операция remove заняла {stopwatch2.Elapsed.TotalSeconds} секунд");
                             break;
 
                         case "exit":
